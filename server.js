@@ -44,7 +44,7 @@ app.get("/getAllDisquette", (req, res) => {
 
 //create disquette
 //{"content":"lorem ipsum fefefe","idAutor":"1","isValid":0}
-app.post("/disquette", auth, (req, res) => {
+app.post("/disquette", (req, res) => {
     var postData = req.body;
     dbMysql.dbMysql.query('INSERT INTO disquette SET ?', postData, function (error, results, fields) {
         if (error) throw error;
@@ -52,7 +52,7 @@ app.post("/disquette", auth, (req, res) => {
     });
 });
 
-app.get("/myDisquette/:idUser", auth, (req, res) => {
+app.get("/myDisquette/:idUser", (req, res) => {
 
     dbMysql.dbMysql.query("SELECT id , content FROM disquette WHERE idAutor=?", [req.params.idUser], function (err, result) {
         if (err) throw err;
@@ -61,7 +61,7 @@ app.get("/myDisquette/:idUser", auth, (req, res) => {
     });
 });
 
-app.delete('/myDisquette', auth, function (req, res) {
+app.delete('/myDisquette', function (req, res) {
     console.log(req.body);
     dbMysql.dbMysql.query('DELETE FROM disquette WHERE idAutor=? and id=?', [req.body.idUser, req.body.idDisquette], function (error, results, fields) {
         if (error) throw error;
@@ -71,7 +71,7 @@ app.delete('/myDisquette', auth, function (req, res) {
 
 /*=========================================================Action Favoris========================================*/
 //recover favoris
-app.get("/favori/:idUser", auth, (req, res) => {
+app.get("/favori/:idUser", (req, res) => {
     dbMysql.dbMysql.query("SELECT * FROM favori WHERE idUser=?", [req.params.idUser], function (err, result) {
         if (err) throw err;
         console.log(result);
@@ -87,7 +87,7 @@ app.post("/favori", (req, res) => {
     });
 });
 //Delete favori
-app.delete('/favori', auth, function (req, res) {
+app.delete('/favori', function (req, res) {
     console.log(req.body);
     dbMysql.dbMysql.query('DELETE FROM favori WHERE idUser=? and idDisquette=?', [req.body.idUser, req.body.idDisquette], function (error, results, fields) {
         if (error) throw error;
@@ -98,7 +98,7 @@ app.delete('/favori', auth, function (req, res) {
 /*=========================================================Action USER========================================*/
 
 //recover all user 
-app.get("/getAllUser", auth, (req, res) => {
+app.get("/getAllUser", (req, res) => {
 
 
     dbMysql.dbMysql.query("SELECT * FROM user", function (err, result) {
@@ -131,7 +131,7 @@ app.post("/user", (req, res) => {
 });
 // delete user 
 //{"id" : 2} 
-app.delete('/user', auth, function (req, res) {
+app.delete('/user', function (req, res) {
     console.log(req.body);
     dbMysql.dbMysql.query('DELETE FROM user WHERE id=? and isAdmin = 1', [req.body.id], function (error, results, fields) {
         if (error) throw error;
