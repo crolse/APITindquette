@@ -1,11 +1,12 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const connection = require("./app/services/connection.js")
-const sequelize = require("./app/config/sequilize")
-const getAllDisquette = require("./app/services/getAllDisquette")
 const dbMysql = require("./app/config/mysql.config.js")
 const connectionBdd = require("./app/services/ConnectionBdd")
+var passwordHash = require('password-hash');
+const jwt = require('jsonwebtoken');
+const auth = require("./app/middleware/auth.js");
+var randomstring = require("randomstring");
 
 
 const app = express();
@@ -43,15 +44,15 @@ app.get("/getAllDisquette", (req, res) => {
 
 //create disquette
 //{"content":"lorem ipsum fefefe","idAutor":"1","isValid":0}
-app.post("/disquette", (req, res) => {
+app.post("/disquette", auth, (req, res) => {
     var postData = req.body;
     dbMysql.dbMysql.query('INSERT INTO disquette SET ?', postData, function (error, results, fields) {
         if (error) throw error;
-        res.end(JSON.stringify(results));
+        res.end("OK");
     });
 });
 
-app.get("/myDisquette/:idUser", (req, res) => {
+app.get("/myDisquette/:idUser", auth, (req, res) => {
 
     dbMysql.dbMysql.query("SELECT id , content FROM disquette WHERE idAutor=?", [req.params.idUser], function (err, result) {
         if (err) throw err;
@@ -60,17 +61,17 @@ app.get("/myDisquette/:idUser", (req, res) => {
     });
 });
 
-app.delete('/myDisquette', function (req, res) {
+app.delete('/myDisquette', auth, function (req, res) {
     console.log(req.body);
     dbMysql.dbMysql.query('DELETE FROM disquette WHERE idAutor=? and id=?', [req.body.idUser, req.body.idDisquette], function (error, results, fields) {
         if (error) throw error;
-        res.end("Disquette supprimer");
+        res.end("OK");
     });
 });
 
 /*=========================================================Action Favoris========================================*/
 //recover favoris
-app.get("/favori/:idUser", (req, res) => {
+app.get("/favori/:idUser", auth, (req, res) => {
     dbMysql.dbMysql.query("SELECT * FROM favori WHERE idUser=?", [req.params.idUser], function (err, result) {
         if (err) throw err;
         console.log(result);
@@ -86,7 +87,7 @@ app.post("/favori", (req, res) => {
     });
 });
 //Delete favori
-app.delete('/favori', function (req, res) {
+app.delete('/favori', auth, function (req, res) {
     console.log(req.body);
     dbMysql.dbMysql.query('DELETE FROM favori WHERE idUser=? and idDisquette=?', [req.body.idUser, req.body.idDisquette], function (error, results, fields) {
         if (error) throw error;
@@ -97,7 +98,8 @@ app.delete('/favori', function (req, res) {
 /*=========================================================Action USER========================================*/
 
 //recover all user 
-app.get("/getAllUser", (req, res) => {
+app.get("/getAllUser", auth, (req, res) => {
+
 
     dbMysql.dbMysql.query("SELECT * FROM user", function (err, result) {
         if (err) throw err;
@@ -106,25 +108,65 @@ app.get("/getAllUser", (req, res) => {
     });
 });
 
-/*todo : checker si un mail existe deja ainsi que le pseudo*/
-/*{"mail":"greg@","pseudo":"crolse","password":"gregge", "isAdmin" : 0}*/
+// Create user
 app.post("/user", (req, res) => {
-
-    var postData = req.body;
-    dbMysql.dbMysql.query('INSERT INTO user SET ?', postData, function (error, results, fields) {
-        if (error) throw error;
-        res.end(JSON.stringify(results));
+    req.body.password = passwordHash.generate(req.body.password);
+    dbMysql.dbMysql.query("SELECT * FROM user WHERE pseudo=? OR mail=?", [req.body.pseudo, req.body.mail], function (err, result) {
+        if (err) throw err;
+        console.log("retour du select" + result);
+        if (result == "") {
+            dbMysql.dbMysql.query('INSERT INTO user SET mail = ? , pseudo = ? , password = ? , isAdmin = ?', [req.body.mail, req.body.pseudo, req.body.password, req.body.isAdmin], function (error, results, fields) {
+                if (error) throw error;
+                res.end("OK");
+            });
+        }
+        else {
+            console.log("email ou pseudo déja utilisé");
+            res.end("NOK")
+            console.log(passwordHash.verify('b', 'sha1$63efbe7d$1$d7ddfc96057a751a0f27b5714d68e810eb5b2584'));
+        }
     });
+
+
 });
 // delete user 
 //{"id" : 2} 
-app.delete('/user', function (req, res) {
+app.delete('/user', auth, function (req, res) {
     console.log(req.body);
-    dbMysql.dbMysql.query('DELETE FROM user WHERE id=?', [req.body.id], function (error, results, fields) {
+    dbMysql.dbMysql.query('DELETE FROM user WHERE id=? and isAdmin = 1', [req.body.id], function (error, results, fields) {
         if (error) throw error;
-        res.end('Utilisateur supprimer');
+        res.end("OK");
     });
 });
+
+/*=========================================================Connexion=======================================*/
+
+app.post("/connection", (req, res) => {
+    dbMysql.dbMysql.query("SELECT password, id FROM user where mail = ?", [req.body.mail], function (err, result) {
+        if (err) throw err;
+        console.log(result[0].password);
+        console.log(result[0].id)
+        let checkPassword = passwordHash.verify(req.body.password, result[0].password)
+        if (checkPassword == true) {
+            console.log("vous êtes connecté")
+            res.status(200).json({
+                userId: result[0].id,
+                token: jwt.sign(
+                    { userId: result[0].id },
+                    randomstring.generate(20),
+                    { expiresIn: '4h' }
+                )
+            });
+        }
+        else {
+            console.log("email ou mot de passe erroné")
+            res.end("NOK")
+        }
+    });
+
+});
+
+
 
 
 // set port, listen for requests
