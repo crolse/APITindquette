@@ -1,0 +1,349 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "API TINDQUETTE",
+    "description": "Warning : Cette documentation api ne prends pas en compte l'authentification par token"
+  },
+  "host": "localhost:8080",
+  "basePath": "/",
+  "tags": [],
+  "schemes": [
+    "http"
+  ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "C'est ici que nous devrions entrer la token déliverer par le serveur lors de la connexion"
+    }
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/addUser": {
+      "post": {
+        "tags": [],
+        "description": "Permet à un utilisateur de s'inscrire",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "password": {
+                  "type": "string",
+                  "example": "123"
+                },
+                "pseudo": {
+                  "type": "string",
+                  "example": "thomas"
+                },
+                "mail": {
+                  "type": "string",
+                  "example": "thomas@gmail.com"
+                },
+                "isAdmin": {
+                  "type": "integer",
+                  "example": 0,
+                  "description": "Valeur 0 -> compte utilisateur / Valeur 1 -> compte admin"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "406": {
+            "description": "Not Acceptable"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/connection": {
+      "post": {
+        "tags": [],
+        "description": "Permet de verifier que l'utilisateur existe",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "mail": {
+                  "type": "string",
+                  "example": "thomas@gmail.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "123"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "406": {
+            "description": "Not Acceptable"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/disquette": {
+      "post": {
+        "tags": [],
+        "description": "Permet d'ajouter une disquette",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "integer",
+                  "example": 26
+                },
+                "content": {
+                  "type": "string",
+                  "example": "lorem ipsum"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/acceptDisquette": {
+      "post": {
+        "tags": [],
+        "description": "Permet à un administrateur de valider une disquette",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "idDisquette": {
+                  "type": "integer",
+                  "example": 26
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/deleteDisquette": {
+      "delete": {
+        "tags": [],
+        "description": "Permet à un administrateur de supprimer une disquette",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "idDisquette": {
+                  "type": "integer",
+                  "example": 26
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/getAllDisquette": {
+      "get": {
+        "tags": [],
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/favori": {
+      "post": {
+        "tags": [],
+        "description": "Permet d'ajouter une disquette a la liste des favoris d'un utilisateur donné",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "integer",
+                  "example": "26"
+                },
+                "idDisquette": {
+                  "type": "integer",
+                  "example": "20"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [],
+        "description": "Permet de retiré de la liste des favoris une disquette d'un utilisateur donné",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "integer",
+                  "example": "any"
+                },
+                "idDisquette": {
+                  "type": "integer",
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/favori/{userId}": {
+      "get": {
+        "tags": [],
+        "description": "Récupere toutes les diquettes Likées d'un utilisateur donné",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/getAllUser": {
+      "get": {
+        "tags": [],
+        "description": "Permet de récupérer tous les utilisateur qui ne sont pas admin",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/user": {
+      "delete": {
+        "tags": [],
+        "description": "Permet a un administrateur de supprimer un utilisateur",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "integer",
+                  "example": "1"
+                },
+                "userIdDelete": {
+                  "type": "integer",
+                  "example": "2"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {}
+}
